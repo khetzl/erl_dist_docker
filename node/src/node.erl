@@ -43,7 +43,7 @@ start_link() ->
     start_link(['na@HP01', 'nb@HP02', 'nc@HP03', 'nd@HP04']).
 
 start_link(Nodes) ->
-    gen_fsm:start_link({local, ?SERVER}, ?MODULE, [Nodes], []).
+    gen_server:start_link({local, ?SERVER}, ?MODULE, [Nodes], []).
 
 
 send_echo() ->
