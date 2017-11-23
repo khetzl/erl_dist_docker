@@ -60,8 +60,7 @@ send_nodes_echo(Nodes) ->
 
 init([CfgNodes]) ->
     {ok, Ref} = timer:send_after(5, connect_nodes),
-    {ok, connect_to_nodes, #state{configured_nodes=CfgNodes,
-                                  timer=Ref}}.
+    {ok, #state{configured_nodes=CfgNodes, timer=Ref}}.
 
 
 %%--------------------------------------------------------------------
