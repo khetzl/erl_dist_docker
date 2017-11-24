@@ -24,3 +24,11 @@ cd docker_erlang
 docker build -t erl . erldock
 docker run -it --rm --net erlnet erldock sh -c 'erl -sname snode -setcookie cookie'
 ```
+
+### Building and running the example Erlang project
+
+```bash
+cd node
+rebar3 compile
+rebar3 shell
+```
