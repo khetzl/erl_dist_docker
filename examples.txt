@@ -6,3 +6,29 @@ docker network create erlnet
 cd docker_erlang
 docker build -t erl . erldock
 docker run -it --rm --net erlnet erldock sh -c 'erl -sname snode -setcookie cookie'
+
+
+
+
+
+### Docker_compose - try node -V1
+docker system prune
+cd docker_compose
+docker build -t erldock
+docker run -it --rm erldock
+
+$ docker run -it --rm erldock
+Erlang/OTP 20 [erts-9.1.5] [source] [64-bit] [smp:4:4] [ds:4:4:10] [async-threads:10] [hipe] [kernel-poll:false]
+
+Eshell V9.1.5  (abort with ^G)
+1> c(node).
+{ok,node}
+2> node:module_info().
+[{module,node},
+ {exports,[{start_link,0},
+...
+
+
+docker run -it --rm erldock sh -c 'ERL_FLAGS="-sname node -setcookie cookie" rebar3 shell'
+
+docker run -it --rm erldock sh -c '_build/default/rel/node/bin/node console'
