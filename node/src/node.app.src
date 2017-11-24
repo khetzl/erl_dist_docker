@@ -1,13 +1,14 @@
 {application, node,
  [{description, "An OTP library"},
   {vsn, "0.1.0"},
+  {mod, {node_app, []}},
   {registered, []},
   {applications,
    [kernel,
     stdlib
    ]},
   {env,[]},
-  {modules, []},
+  {modules, [node]},
 
   {maintainers, []},
   {licenses, ["MIT"]},
