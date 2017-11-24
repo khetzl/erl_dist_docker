@@ -53,7 +53,10 @@ send_echo() ->
     gen_server:call(?SERVER, echo).
 
 send_nodes_echo(Nodes) ->
-    [rpc:call(N, node, send_echo, []) || N<-Nodes].
+    io:format(user, "INFO: Node ~p sends echo request to other nodes.~n", [node()]),
+    RTN = [rpc:call(N, node, send_echo, []) || N<-Nodes],
+    io:format(user, "INFO: Return status ~p~n", [RTN]),
+    RTN.
 
 
 %%
@@ -80,9 +83,12 @@ join_network([Node|RestNodes]) ->
 %%%===================================================================
 
 init([Nodes]) ->
-    [_MyNode, Domain] = string:tokens(atom_to_list(node()), "@"),
+    [MyNode, Domain] = string:tokens(atom_to_list(node()), "@"),
     CfgNodes =
         [list_to_atom(string:join([N, Domain], "@")) || N <- Nodes],
+    io:format(user,
+              "INFO: Node: ~p starts and tries to join network ...~n",
+              [MyNode]),
     {ok, Ref} = timer:send_after(5, connect_nodes),
     {ok, #state{configured_nodes=CfgNodes, timer=Ref}}.
 
@@ -139,8 +145,10 @@ handle_info(connect_nodes, S=#state{configured_nodes=CfgNodes,
                                     echo_interval=EI,
                                     timer=Ref}) ->
     timer:cancel(Ref),
-    lists:map(fun(Node)-> net_adm:ping(Node) end, CfgNodes),
+    RTN = lists:map(fun(Node)-> net_adm:ping(Node) end, CfgNodes),
+    io:format(user, "INFO: Node connecting status ~p~n", [RTN]),
     NotConnectedNodes = CfgNodes -- [node()|nodes()],
+    io:format(user, "INFO: Not connected nodes: ~p~n", [NotConnectedNodes]),
     case NotConnectedNodes of
         [] ->
             {ok, EchoRef} = timer:send_after(EI, post_echo_request),
@@ -156,6 +164,7 @@ handle_info(connect_nodes_retry, S=#state{configured_nodes=CfgNodes,
     timer:cancel(Ref),
     lists:map(fun(Node)-> net_adm:ping(Node) end, CfgNodes),
     {ok, EchoRef} = timer:send_after(EI, post_echo_request),
+    io:format(user, "INFO: After retry, the connected nodes ~p~n", [nodes()]),
     {noreply, S#state{connected_nodes=nodes(), timer=EchoRef}};
 
 handle_info(post_echo_request, S=#state{timer=Ref,
