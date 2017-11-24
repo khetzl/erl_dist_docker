@@ -7,7 +7,9 @@
     start_link/0,
     start_link/1,
     send_echo/0,
-    send_nodes_echo/1]).
+    send_nodes_echo/1,
+    join_network/0,
+    join_network/1]).
 
 %% gen_server callbacks
 -export([
@@ -21,6 +23,7 @@
 -define(SERVER, ?MODULE).
 
 -record(state, {
+    domain = "",
     configured_nodes = [],
     connected_nodes = [],
     node_connect_retry_interval = 5000,
@@ -40,7 +43,7 @@
 %% @end
 %%--------------------------------------------------------------------
 start_link() ->
-    start_link(['na@HP01', 'nb@HP02', 'nc@HP03', 'nd@HP04']).
+    start_link(["na", "nb", "nc", "nd"]).
 
 start_link(Nodes) ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [Nodes], []).
@@ -53,12 +56,33 @@ send_nodes_echo(Nodes) ->
     [rpc:call(N, node, send_echo, []) || N<-Nodes].
 
 
+%%
+join_network() ->
+    {ok, CfgNodes} =
+        gen_server:call(?SERVER, get_configured_nodes),
+    join_network(CfgNodes -- [node()]).
+%%
+join_network([]) ->
+    {error, not_connected};
+join_network([Node|RestNodes]) ->
+	case net_adm:ping(Node) of
+        pong ->
+            gen_server:call(?SERVER, update_connected_nodes),
+            ?SERVER ! post_echo_request,
+			ok;
+		_ ->
+            join_network(RestNodes)
+    end.
+
 
 %%%===================================================================
 %%% gen_server callbacks
 %%%===================================================================
 
-init([CfgNodes]) ->
+init([Nodes]) ->
+    [_MyNode, Domain] = string:tokens(atom_to_list(node()), "@"),
+    CfgNodes =
+        [list_to_atom(string:join([N, Domain], "@")) || N <- Nodes],
     {ok, Ref} = timer:send_after(5, connect_nodes),
     {ok, #state{configured_nodes=CfgNodes, timer=Ref}}.
 
@@ -77,6 +101,10 @@ init([CfgNodes]) ->
 %%                                   {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
+handle_call(get_configured_nodes, _From, S=#state{configured_nodes=CfgNodes}) ->
+    {reply, {ok, CfgNodes}, S};
+handle_call(update_connected_nodes, _From, S) ->
+    {reply, ok, S#state{connected_nodes=nodes()}};
 handle_call(echo, _From, State) ->
     {reply, {ok, echo}, State};
 handle_call(_Request, _From, State) ->
@@ -118,7 +146,7 @@ handle_info(connect_nodes, S=#state{configured_nodes=CfgNodes,
             {ok, EchoRef} = timer:send_after(EI, post_echo_request),
             {noreply, S#state{connected_nodes=nodes(),
                               timer=EchoRef}};
-	_ ->
+	    _ ->
             {ok, RetryRef} = timer:send_after(NCRI, connect_nodes_retry),
             {noreply, S#state{timer=RetryRef}}
     end;
