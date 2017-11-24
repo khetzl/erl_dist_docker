@@ -1,4 +1,8 @@
 
 docker network create erlnet
-
 docker run --name cname1 -it --rm --net erlnet erlang sh -c 'erl -sname snode -setcookie cookie'
+
+docker network create erlnet
+cd docker_erlang
+docker build -t erl . erldock
+docker run -it --rm --net erlnet erldock sh -c 'erl -sname snode -setcookie cookie'
