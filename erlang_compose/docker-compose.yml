@@ -2,24 +2,30 @@ version: '3'
 
 networks:
     erlnet:
-      driver: bridge
-        #driver: bridge
-        #ipam:
-        #    driver: default
-        #    config:
-        #      - subnet: 172.16.238.0/24
-              #gateway: "172.16.238.1"
+      ipam:
+        driver: default
+        config:
+          - subnet: 172.16.238.0/24
+          #gateway: 172.16.238.1
 
 services:
   erldock1:
+    #hostname: ehost1
     image: "erldock"
     networks:
       - erlnet
       #erlnet:
       #  ipv4_address: 172.16.238.10
+    #extra_hosts:
+      #- "ehost1:172.16.238.10"
+      #- "ehost2:172.16.238.11"
   erldock2:
+    #hostname: ehost2
     image: "erldock"
     networks:
       - erlnet
       #erlnet:
       #  ipv4_address: 172.16.238.11
+    #extra_hosts:
+    #  - "ehost1:172.16.238.10"
+    #  - "ehost2:172.16.238.11"

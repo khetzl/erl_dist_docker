@@ -28,7 +28,13 @@ Eshell V9.1.5  (abort with ^G)
  {exports,[{start_link,0},
 ...
 
+net_adm:ping('node@').
+
 
 docker run -it --rm erldock sh -c 'ERL_FLAGS="-sname node -setcookie cookie" rebar3 shell'
 
-docker run -it --rm erldock sh -c '_build/default/rel/node/bin/node console'
+docker run --net 431131ec420e -it --rm erldock sh -c '_build/default/rel/node/bin/node console'
+
+
+rpc:call(node@45589560dbfb, net_adm, ping, [node@ba7d48c94ce9]).
+rpc:call(node@ba7d48c94ce9, net_adm, ping, [node@45589560dbfb]).
