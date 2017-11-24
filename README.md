@@ -27,8 +27,28 @@ docker run -it --rm --net erlnet erldock sh -c 'erl -sname snode -setcookie cook
 
 ### Building and running the example Erlang project
 
+A rebar3 project named *node* has been setup as an example Erlang application. A dev mode release can be generated and then started with the provided start script.
+
 ```bash
 cd node
-rebar3 compile
-rebar3 shell
+rebar3 release
+_build/default/rel/node/bin/node console
+```
+
+### Multiple nodes on the localhost
+
+#### Building an image with the example application
+
+```bash
+cd erlang_compose
+docker build -t erldock .
+```
+
+#### Start two nodes with docker-compose
+
+
+#### Starting an O&M node
+
+```bash
+docker run --net <network_name> -it --rm erldock sh -c '_build/default/rel/node/bin/node console'
 ```
