@@ -4,6 +4,8 @@ deps
 *.beam
 *.plt
 erl_crash.dump
+node/_build
+node/rebar.lock
 ebin/*.beam
 rel/example_project
 .concrete/DEV_MODE
