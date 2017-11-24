@@ -9,6 +9,14 @@ Using built-in Erlang distribution between Erlang nodes deployed in Docker conta
 * Docker containers running epmd can't expose their port 4369 as it will lead to a port collision, when containers run on a single host.
 * Erlang nodes started in containers should start their epmd inside their containers.
 * To enable networking without restrictions between two Docker containers, the containers need to be part of the same user defined Docker network. (Using networks provided by Docker such as none, host, bridge won't work in this context.)
+* Communication between two Erlang nodes in two Docker containers:
+  - Erlang nodes need to be started with shortname (``-sname``) option. In this case the hostname will be dynamically distributed and will inherit the Docker container ID. If the hostname is set, two nodes will not see each other.
+ - Limitation: Since the dynamic binding, manual intervention is obligatory so the nodes will discover each other. This means that in one's shell ```net_adm:ping(OthersFullName).``` needs to be run.
+
+
+* current problems, possible fields to explore:
+  - connection between an Erlang node in Docker container and a stand-alone Erlang node is not possible - they are not on the same Docker network
+  - two Docker containers with Erlang nodes on two hosts - same Docker network problem - Kubernetes will be needed to overcome this limitation
 
 ### Minimal success example
 ```bash
